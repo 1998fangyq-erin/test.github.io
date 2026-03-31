@@ -8,15 +8,15 @@
     <style>
         :root {
             /* 清新治愈调色板 */
-            --bg-color: #fdfcf9;       /* 暖白/米白背景 */
-            --card-bg: #ffffff;        /* 纯白卡片 */
-            --text-main: #4a4238;      /* 深咖灰色主文字，温和不刺眼 */
-            --text-sub: #8c8278;       /* 浅咖色副标题/注释 */
-            --accent-green: #8ba888;   /* 浅绿/莫兰迪绿 (主色) */
+            --bg-color: #fdfcf9;       
+            --card-bg: #ffffff;        
+            --text-main: #4a4238;      
+            --text-sub: #8c8278;       
+            --accent-green: #8ba888;   
             --accent-green-hover: #728f6f;
-            --accent-brown: #c4b2a1;   /* 浅咖色/卡其色 (辅色) */
-            --danger-color: #d97762;   /* 柔和的砖红色，用于警告 */
-            --border-light: #e8e3dd;   /* 极浅的咖色边框 */
+            --accent-brown: #c4b2a1;   
+            --danger-color: #d97762;   
+            --border-light: #e8e3dd;   
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
@@ -73,11 +73,30 @@
             text-shadow: 0 4px 10px rgba(139,168,136,0.2);
             line-height: 1.3;
         }
-        .subtitle { font-size: 15px; color: var(--text-sub); margin-bottom: 48px; line-height: 1.6; }
+        .subtitle { font-size: 15px; color: var(--text-sub); margin-bottom: 40px; line-height: 1.6; }
+        
+        /* 【新增】邀请码输入区样式 */
+        .auth-container {
+            width: 100%; max-width: 280px; margin: 0 auto 24px auto;
+            transition: all 0.3s ease;
+        }
+        .invite-input {
+            width: 100%; padding: 14px 20px; border: 1px solid var(--border-light);
+            border-radius: 12px; font-size: 15px; text-align: center; color: var(--text-main);
+            background: var(--card-bg); outline: none; transition: border-color 0.2s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .invite-input:focus { border-color: var(--accent-green); }
+        .invite-input::placeholder { color: #d1d5db; font-weight: normal; }
+        .error-msg {
+            color: var(--danger-color); font-size: 13px; margin-top: 8px; 
+            min-height: 18px; opacity: 0; transition: opacity 0.2s;
+        }
+
         .btn-primary {
             background: linear-gradient(135deg, var(--accent-green), #a3bfa0);
             color: #fff; border: none; padding: 16px 48px; border-radius: 30px;
-            font-size: 18px; font-weight: bold; cursor: pointer;
+            font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; max-width: 280px;
             box-shadow: 0 8px 20px rgba(139,168,136,0.3);
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -136,14 +155,13 @@
         .section-title { font-size: 16px; font-weight: bold; border-left: 4px solid var(--accent-green); padding-left: 8px; margin-bottom: 12px; color: var(--text-main); }
         .text-block { font-size: 14px; line-height: 1.6; color: var(--text-main); margin-bottom: 24px; text-align: justify; }
         
-        /* 优化后的：处境真相 (左对齐 + 防止单字) */
         .truth-box {
-            background: rgba(196, 178, 161, 0.1); /* 极浅的咖色底 */
+            background: rgba(196, 178, 161, 0.1); 
             border: 1px solid rgba(196, 178, 161, 0.3);
             border-radius: 12px; padding: 16px;
             font-weight: 500; color: var(--text-main); margin-bottom: 24px; 
-            text-align: left; /* 左对齐 */
-            text-wrap: pretty; /* 防止单字成行 */
+            text-align: left; 
+            text-wrap: pretty; 
             line-height: 1.6;
             font-size: 14px;
         }
@@ -157,13 +175,12 @@
             content: "✦"; position: absolute; left: 0; color: var(--accent-green); font-size: 14px;
         }
 
-        /* 优化后的：温度箴言 (左对齐 + 防止单字 + 浅色呼吸灯) */
         .warm-box {
             background: rgba(139, 168, 136, 0.03);
             border: 1px solid var(--accent-green); border-radius: 12px; padding: 20px;
             font-size: 14px; line-height: 1.6; color: var(--text-main); 
-            text-align: left; /* 左对齐 */
-            text-wrap: pretty; /* 防止单字成行 */
+            text-align: left; 
+            text-wrap: pretty; 
             font-style: normal; 
             animation: breathe 4s infinite ease-in-out;
         }
@@ -188,7 +205,13 @@
     <div id="page-welcome" class="view">
         <h1 class="title-glow">你是否真的应该离职？</h1>
         <p class="subtitle">剥离情绪滤镜，透视底层筹码。<br>30道灵魂拷问，测出你的真实职场抗风险血条与出路。</p>
-        <button class="btn-primary" onclick="startQuiz()">开始深度诊断</button>
+        
+        <div class="auth-container" id="auth-box">
+            <input type="text" id="invite-code" class="invite-input" placeholder="请输入邀请码解锁测试" autocomplete="off">
+            <div class="error-msg" id="error-msg">邀请码无效，请联系作者获取</div>
+        </div>
+
+        <button class="btn-primary" id="main-action-btn" onclick="handleStartClick()">解锁并开始诊断</button>
     </div>
 
     <div id="page-quiz" class="view">
@@ -233,45 +256,46 @@
 </div>
 
 <script>
-    // --- 数据定义区 (保留了你修改后的所有题目和分数选项) ---
+    // ==========================================
+    // 🔑 【设置专区：在这里配置你的专属邀请码】
+    // ==========================================
+    // 你可以随时在这里添加、删除、修改密码。大写小写都可以，系统会自动转大写验证。
+    const VALID_CODES = [
+        "VIP888",      // 默认测试码1
+        "XHS2026",     // 默认测试码2
+        "GOTO666",     // 默认测试码3
+        "HAPPYLIFE"     // 默认测试码4
+    ];
+    // ==========================================
+
+    // --- 数据定义区 ---
     const questions = [
-        // 维度一：财务安全感 (Q1-Q5)
         { text: "1. 存款覆盖：不计入任何后续收入，你现有的可支配存款能支撑你维持现有生活水平多久？", options: [ {s:1, t:"1-3个月，停薪即破产"}, {s:2, t:"3-6个月，有短期断炊焦虑"}, {s:3, t:"6-12个月，能体面地度过一个短Gap"}, {s:4, t:"12-24个月，有充足的找工作缓冲期"}, {s:5, t:"24个月以上，甚至有被动收入，心中不慌"} ]},
         { text: "2. 负债比重：每月刚性支出（房贷、车贷、房租等）占你目前月收入的比例？", options: [ {s:1, t:"70%以上，睁眼就欠钱，压力极大"}, {s:2, t:"50%-70%，财务紧绷"}, {s:3, t:"30%-50%，属于合理的杠杆范围"}, {s:4, t:"10%-30%，负债压力很小"}, {s:5, t:"几乎为零，真正的“轻资产”状态"} ]},
         { text: "3. 资金弹性：面对突发重疾或家庭意外支出的应对能力？", options: [ {s:1, t:"完全无法应对，一击即溃"}, {s:2, t:"必须向亲友借钱才能度过"}, {s:3, t:"勉强能凑出，但会严重影响生活质量"}, {s:4, t:"有充足的家庭准备金或部分商业医疗险"}, {s:5, t:"保障体系极其完善，无后顾之忧"} ]},
         { text: "4. 收入吸引力：你目前的综合年薪在同城市/同行业中处于什么水平？", options: [ {s:5, t:"远低于平均水平，勉强糊口"}, {s:4, t:"中等偏下，刚好够花"}, {s:3, t:"行业平均水平，不多不少"}, {s:2, t:"属于高薪层级，很难在外面找到同等薪资"}, {s:1, t:"极其丰厚，如果不干这行可能拿不到这么多"} ]},
         { text: "5. 职业护城河：排除主观离职意愿，该岗位/公司在未来一年内发生变动的可能性？", options: [ {s:5, t:"极高，已经听到裁员风声或业务已停摆"}, {s:4, t:"较高，行业下行，公司在缩减开支"}, {s:3, t:"一般，目前还算稳健"}, {s:2, t:"很低，核心部门，公司现金流充足"}, {s:1, t:"极低，除非自己走，否则公司会一直养着你"} ]},
-        
-        // 维度二：风险承受力 (Q6-Q8)
         { text: "6. 家庭支持网络：你的家庭结构和经济状况，对你“折腾”或“Gap”的支持程度？", options: [ {s:1, t:"极度反对/唯一支柱，绝不能断供"}, {s:2, t:"家人担忧，会带来极大的情绪压力"}, {s:3, t:"中立不干涉，靠自己攒的钱折腾"}, {s:4, t:"伴侣或家人能提供精神支持，分担经济压力"}, {s:5, t:"全力支持，且有强大的经济后盾托底"} ]},
         { text: "7. 心态弹性：面对辞职后待业的不确定性和社会评价，你的心态稳健度？", options: [ {s:1, t:"极易崩溃，离开光环会极其自卑"}, {s:2, t:"比较敏感焦虑，怕被问起现状"}, {s:3, t:"顺其自然，偶尔焦虑但能排解"}, {s:4, t:"拥有较强的课题分离能力，不在乎别人眼光"}, {s:5, t:"心理素质过硬，享受打破常规的旷野感"} ]},
         { text: "8. 退路准备：如果决定离职去尝试新方向，是否有兜底备案？", options: [ {s:1, t:"毫无退路，失败就万劫不复"}, {s:2, t:"有点模糊的想法，但还没做"}, {s:3, t:"想法已落地，在验证中，走一步看一步"}, {s:4, t:"有可变现副业/兼职，能覆盖基本开支"}, {s:5, t:"退路极其稳固（随时回前司/有私活/收租…）"} ]},
-
-        // 维度三：身心耗竭度 (Q9-Q14)
         { text: "9. 周日情绪：周日傍晚想到次日要上班，第一反应是？", options: [ {s:1, t:"轻松平静，甚至有点期待"}, {s:2, t:"略有压力，但能自我调节"}, {s:3, t:"麻木/说不清，打工人的宿命"}, {s:4, t:"明显焦虑烦躁，拖延入睡"}, {s:5, t:"严重生理反感，失眠想哭绝望"} ]},
         { text: "10. 职场情绪：在公司时对人际沟通和跨部门协作的容忍度？", options: [ {s:1, t:"游刃有余，能提供情绪价值"}, {s:2, t:"偶尔烦躁，但能高效解决"}, {s:3, t:"戴上面具，维持职业化的克制"}, {s:4, t:"经常处于暴躁边缘"}, {s:5, t:"彻底丧失耐心，想掀桌子或开骂"} ]},
         { text: "11. 生命力损耗：下班回家后，是否还有能量进行个人兴趣或自我提升？", options: [ {s:1, t:"精力旺盛，下班才是生活的开始"}, {s:2, t:"略显疲惫，休息一会就能恢复"}, {s:3, t:"视当天工作强度而定"}, {s:4, t:"很难集中精神，只想躺着"}, {s:5, t:"被彻底“吸干”，连回微信力气都没有"} ]},
         { text: "12. 躯体化反应：过去三个月，身体是否发出了明显警告？", options: [ {s:1, t:"非常健康"}, {s:2, t:"偶有小毛病"}, {s:3, t:"亚健康常态，易感冒疲惫"}, {s:4, t:"出现明显职业病，频繁失眠/脱发"}, {s:5, t:"查出具体器质性病变/心理疾病"} ]},
         { text: "13. 内耗溯源：日常工作中，消耗你最多精力的事情是？", options: [ {s:1, t:"攻克有意思的难题"}, {s:2, t:"正常的项目推进"}, {s:3, t:"一半业务，一半沟通"}, {s:4, t:"大量向上管理和复杂人际关系"}, {s:5, t:"纯粹的职场政治、背锅及无意义材料"} ]},
         { text: "14. 职业冷漠感：你现在对公司项目的成败还有多在乎？", options: [ {s:1, t:"高度负责，当成事业"}, {s:2, t:"尽力而为，对得起薪水"}, {s:3, t:"只做分内之事"}, {s:4, t:"极其麻木，经常摸鱼逃避"}, {s:5, t:"彻底摆烂，甚至希望项目早点黄掉"} ]},
-
-        // 维度四：职业瓶颈感 (Q15-Q20)
         { text: "15. 成长速度：目前的工作是否还在拓宽你的认知边界？", options: [ {s:1, t:"每天都有新挑战，飞速成长"}, {s:2, t:"稳步提升，能学新东西"}, {s:3, t:"偶尔有启发，大部分是熟练工"}, {s:4, t:"成长极其缓慢，在吃老本"}, {s:5, t:"完全停滞甚至退化"} ]},
         { text: "16. 角色匹配：你在这个组织里，是螺丝钉还是贡献者？", options: [ {s:1, t:"核心骨干，不可替代"}, {s:2, t:"关键成员，有发挥空间"}, {s:3, t:"中规中矩的执行者"}, {s:4, t:"边缘化，才华被稀释"}, {s:5, t:"纯粹的“纺织工”，随时可被替换"} ]},
         { text: "17. 掌控权：对自己工作节奏和交付质量的掌控权有多大？", options: [ {s:1, t:"极高，我是核心主导者"}, {s:2, t:"较高，能在框架内发挥"}, {s:3, t:"一般，按部就班"}, {s:4, t:"很低，被动接受指令"}, {s:5, t:"毫无掌控权，执行荒谬决定"} ]},
         { text: "18. 价值对齐：你的价值观与公司核心业务方向契合度？", options: [ {s:1, t:"高度一致"}, {s:2, t:"比较认可"}, {s:3, t:"谈不上认同或反对"}, {s:4, t:"觉得战略很蠢，浪费资源"}, {s:5, t:"强烈冲突，觉得公司在“作恶”"} ]},
         { text: "19. 技能保鲜度：你目前核心技能在行业趋势中的位置？", options: [ {s:1, t:"绝对前沿，引领趋势"}, {s:2, t:"主流标准，市场通用"}, {s:3, t:"偏传统，特定领域够用"}, {s:4, t:"开始落后，天花板可见"}, {s:5, t:"淘汰边缘，极易被平替"} ]},
         { text: "20. 未来期待：维持现状，对3年后成为上司那种状态的期待？", options: [ {s:1, t:"充满希望"}, {s:2, t:"比较满意"}, {s:3, t:"顺其自然"}, {s:4, t:"感到压抑，不想过那种生活"}, {s:5, t:"极其抗拒，给Title都不想要"} ]},
-
-        // 维度五：市场竞争力 (Q21-Q26)
         { text: "21. 行情感知：市场上对你这类人才的需求程度？", options: [ {s:1, t:"极度萎缩，大规模裁员"}, {s:2, t:"竞争极其激烈，卷出天际"}, {s:3, t:"说不清，看机会和运气"}, {s:4, t:"需求较多，健康流动"}, {s:5, t:"极度抢手，供不应求"} ]},
         { text: "22. 简历回馈：短期内拿到优质 Offer 的信心？", options: [ {s:1, t:"毫无信心，石沉大海"}, {s:2, t:"比较心虚，可能降薪降级"}, {s:3, t:"平薪跳槽应该有机会"}, {s:4, t:"较有把握，猎头主动撩"}, {s:5, t:"志在必得，手里有现成意向"} ]},
         { text: "23. 硬通货作品：剥离平台Title，是否有个人实绩证明实力？", options: [ {s:1, t:"离开现在的平台，我什么都不是"}, {s:2, t:"碎片化产出，很难量化"}, {s:3, t:"简历上有不错的数据和经历"}, {s:4, t:"有完整项目操盘经验、方法论"}, {s:5, t:"有行业广泛认可的个人作品或强IP"} ]},
         { text: "24. 底层能力迁移：换行或换工作，底层能力迁移性如何？", options: [ {s:1, t:"完全不相关，纯小白"}, {s:2, t:"需大范围重塑，沉没成本高"}, {s:3, t:"有一定参考价值，省去摸索期"}, {s:4, t:"迁移性很强，快速赋能新领域"}, {s:5, t:"完全复用，且形成降维打击"} ]},
         { text: "25. 范式转移适应力：面对行业技术革新的拥抱程度？", options: [ {s:1, t:"极度排斥，与我无关"}, {s:2, t:"感到焦虑，但毫无行动"}, {s:3, t:"偶尔看资讯了解概念"}, {s:4, t:"能熟练使用新工具并建立自己的工作流"}, {s:5, t:"深度研究，能用新技术变现"} ]},
         { text: "26. 人脉与情报网：目标领域有效人脉资源？", options: [ {s:1, t:"完全两眼一抹黑"}, {s:2, t:"仅限于点赞的点头之交"}, {s:3, t:"认识几个同行，能打听基础信息"}, {s:4, t:"有可深入交流的前辈/前同事"}, {s:5, t:"圈内资源极其丰富，有大佬愿带/挖"} ]},
-
-        // 维度六：核心驱动与路径 (Q27-Q30)
         { text: "27. 新目标清晰度：接下来想干什么/认可的意义思考得有多清楚？", options: [ {s:1, t:"极其迷茫，完全不知道下一步"}, {s:2, t:"只有一个模糊的念头"}, {s:3, t:"有几个具体备选方向正在权衡"}, {s:4, t:"目标明确，已做初步调研"}, {s:5, t:"极其精准，连详细路径都画好了"} ]},
         { text: "28. 好奇心与执行力：面对心动新领域的主动学习渴望和执行率？", options: [ {s:1, t:"懒得改变"}, {s:2, t:"偶尔买课，三天打鱼两天晒网"}, {s:3, t:"按部就班保持学习节奏"}, {s:4, t:"行动迅速，已做出雏形/Demo"}, {s:5, t:"旺盛求知欲+恐怖执行力，死磕到底"} ]},
         { text: "29. 意义感权重：若新工作前期辛苦收入减，但价值认同高，愿意付出的程度？", options: [ {s:1, t:"绝对不干，打工只为搞钱"}, {s:2, t:"除非能保证很快赚大钱"}, {s:3, t:"看心情和存款"}, {s:4, t:"愿忍受阵痛期，换取做热爱之事的权利"}, {s:5, t:"甘愿废寝忘食，甚至倒贴"} ]},
@@ -291,7 +315,7 @@
 
     // --- 状态变量 ---
     let currentQ = 0;
-    let scores = []; // 保存每题得分
+    let scores = [];
 
     // DOM 元素
     const views = document.querySelectorAll('.view');
@@ -300,34 +324,77 @@
     const currQSpan = document.getElementById('curr-q');
     const progressBar = document.getElementById('progress-bar');
     const backBtn = document.getElementById('back-btn');
+    const authBox = document.getElementById('auth-box');
+    const mainBtn = document.getElementById('main-action-btn');
+    const errorMsg = document.getElementById('error-msg');
 
-    // --- 【新增】页面初始化时校验缓存 ---
+    // --- 页面初始化校验缓存与鉴权 ---
     document.addEventListener('DOMContentLoaded', () => {
-        // 尝试从浏览器本地存储读取之前的测试结果
+        // 1. 检查是否已经输入过有效邀请码解锁了
+        const isUnlocked = localStorage.getItem('quizUnlocked') === 'true';
+        
+        if (isUnlocked) {
+            // 如果已解锁，隐藏邀请码输入框，按钮文案变回普通状态
+            authBox.style.display = 'none';
+            mainBtn.innerText = '开始深度诊断';
+        }
+
+        // 2. 尝试从浏览器读取之前的测试结果
         const savedDataStr = localStorage.getItem('careerQuizResult');
         if (savedDataStr) {
             try {
                 const savedData = JSON.parse(savedDataStr);
-                // 如果有数据，直接渲染结果页并展示
                 renderResultUI(savedData);
                 switchView('page-result');
-                // 等待页面切换完成后再渲染图表（防止宽度计算错误）
                 setTimeout(() => renderRadar(savedData.radarData), 100);
             } catch (e) {
-                // 如果数据损坏，清空并显示欢迎页
                 localStorage.removeItem('careerQuizResult');
                 switchView('page-welcome');
             }
         } else {
-            // 没有数据，正常展示欢迎页
             switchView('page-welcome');
         }
     });
 
-    // --- 核心逻辑 ---
     function switchView(viewId) {
         views.forEach(v => v.classList.remove('active'));
         document.getElementById(viewId).classList.add('active');
+    }
+
+    // --- 【新增】处理首页点击（鉴权逻辑） ---
+    function handleStartClick() {
+        // 判断是否已经解锁过
+        if (localStorage.getItem('quizUnlocked') === 'true') {
+            startQuiz(); // 已解锁，直接进题
+            return;
+        }
+
+        // 未解锁，走验证逻辑
+        const inputCode = document.getElementById('invite-code').value.trim().toUpperCase();
+        
+        if (inputCode === "") {
+            showError("请输入邀请码");
+            return;
+        }
+
+        if (VALID_CODES.includes(inputCode)) {
+            // 验证成功！存入本地长期记忆
+            localStorage.setItem('quizUnlocked', 'true');
+            errorMsg.style.opacity = '0';
+            startQuiz(); // 进入答题
+        } else {
+            // 验证失败
+            showError("邀请码无效，请联系作者获取");
+        }
+    }
+
+    function showError(msg) {
+        errorMsg.innerText = msg;
+        errorMsg.style.opacity = '1';
+        // 抖动效果 (可选)
+        authBox.style.transform = 'translateX(-5px)';
+        setTimeout(() => authBox.style.transform = 'translateX(5px)', 100);
+        setTimeout(() => authBox.style.transform = 'translateX(0)', 200);
     }
 
     function startQuiz() {
@@ -381,7 +448,6 @@
         switchView('page-loading');
 
         setTimeout(() => {
-            // 第一步：计算 6 维 Pct
             const Finance_Pct = (getSum(0, 4) - 5) / 20 * 100;
             const Risk_Pct = (getSum(5, 7) - 3) / 12 * 100;
             const Burnout_Pct = (getSum(8, 13) - 6) / 24 * 100;
@@ -392,7 +458,6 @@
             const radarData = [Finance_Pct, Burnout_Pct, Stagnation_Pct, Market_Pct, Drive_Pct, Risk_Pct];
             const dimScores = [Finance_Pct, Risk_Pct, Burnout_Pct, Stagnation_Pct, Market_Pct, Drive_Pct];
 
-            // 第二步：宏观 3 维
             const Base_Raw = getSum(0, 4) + getSum(5, 7);
             const Base_Pct = (Base_Raw - 8) / 32 * 100;
 
@@ -402,13 +467,11 @@
             const Pull_Raw = getSum(20, 25) + getSum(26, 29);
             const Pull_Pct = (Pull_Raw - 10) / 40 * 100;
 
-            // 第三步：判定阈值
             const baseStr = Base_Pct >= 60 ? 'H' : 'L';
             const pushStr = Push_Pct >= 60 ? 'H' : 'L';
             const pullStr = Pull_Pct >= 60 ? 'H' : 'L';
             const key = `${baseStr}-${pushStr}-${pullStr}`;
             
-            // 【新增】构造需要保存的数据对象
             const saveData = {
                 Base_Pct: Base_Pct,
                 radarData: radarData,
@@ -416,22 +479,18 @@
                 resultKey: key
             };
 
-            // 【新增】将测试结果存入本地缓存
             localStorage.setItem('careerQuizResult', JSON.stringify(saveData));
 
-            // 调用分离出来的 UI 渲染函数
             renderResultUI(saveData);
             switchView('page-result');
             setTimeout(() => renderRadar(radarData), 100);
 
-        }, 1200); // 1.2s 动画模拟
+        }, 1200);
     }
 
-    // --- 【新增】将渲染结果页的逻辑单独提取出来，方便答题完和读取缓存时复用 ---
     function renderResultUI(data) {
         const resultData = resultsDB[data.resultKey] || resultsDB["L-L-L"];
 
-        // 熔断机制：Base_Pct < 25 触发红条警告
         if (data.Base_Pct < 25) {
             document.getElementById('veto-banner').style.display = 'block';
         } else {
@@ -452,7 +511,6 @@
             guideUl.appendChild(li);
         });
 
-        // 渲染进度条列表
         const dimNames = ["财务安全", "风险承受", "身心耗竭", "职业瓶颈", "市场竞争", "核心驱动"];
         const colorGreen = "var(--accent-green)";
         const colorBrown = "var(--accent-brown)";
@@ -510,8 +568,9 @@
         myChart.setOption(option);
     }
 
-    // --- 【新增】重新测试：清空缓存并刷新页面 ---
+    // --- 重新测试：清空成绩，但不清除通行证 ---
     function restartQuiz() {
+        // 只清除测试结果，保留解锁状态(quizUnlocked)
         localStorage.removeItem('careerQuizResult');
         location.reload();
     }
