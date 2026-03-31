@@ -185,7 +185,7 @@
 <body>
 
 <div id="app-container">
-    <div id="page-welcome" class="view active">
+    <div id="page-welcome" class="view">
         <h1 class="title-glow">你是否真的应该离职？</h1>
         <p class="subtitle">剥离情绪滤镜，透视底层筹码。<br>30道灵魂拷问，测出你的真实职场抗风险血条与出路。</p>
         <button class="btn-primary" onclick="startQuiz()">开始深度诊断</button>
@@ -228,12 +228,12 @@
 
         <div class="warm-box" id="res-warm"></div>
 
-        <button class="restart-btn" onclick="location.reload()">重新测试</button>
+        <button class="restart-btn" onclick="restartQuiz()">重新测试</button>
     </div>
 </div>
 
 <script>
-    // --- 数据定义区 ---
+    // --- 数据定义区 (保留了你修改后的所有题目和分数选项) ---
     const questions = [
         // 维度一：财务安全感 (Q1-Q5)
         { text: "1. 存款覆盖：不计入任何后续收入，你现有的可支配存款能支撑你维持现有生活水平多久？", options: [ {s:1, t:"1-3个月，停薪即破产"}, {s:2, t:"3-6个月，有短期断炊焦虑"}, {s:3, t:"6-12个月，能体面地度过一个短Gap"}, {s:4, t:"12-24个月，有充足的找工作缓冲期"}, {s:5, t:"24个月以上，甚至有被动收入，心中不慌"} ]},
@@ -301,6 +301,29 @@
     const progressBar = document.getElementById('progress-bar');
     const backBtn = document.getElementById('back-btn');
 
+    // --- 【新增】页面初始化时校验缓存 ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // 尝试从浏览器本地存储读取之前的测试结果
+        const savedDataStr = localStorage.getItem('careerQuizResult');
+        if (savedDataStr) {
+            try {
+                const savedData = JSON.parse(savedDataStr);
+                // 如果有数据，直接渲染结果页并展示
+                renderResultUI(savedData);
+                switchView('page-result');
+                // 等待页面切换完成后再渲染图表（防止宽度计算错误）
+                setTimeout(() => renderRadar(savedData.radarData), 100);
+            } catch (e) {
+                // 如果数据损坏，清空并显示欢迎页
+                localStorage.removeItem('careerQuizResult');
+                switchView('page-welcome');
+            }
+        } else {
+            // 没有数据，正常展示欢迎页
+            switchView('page-welcome');
+        }
+    });
+
     // --- 核心逻辑 ---
     function switchView(viewId) {
         views.forEach(v => v.classList.remove('active'));
@@ -367,6 +390,7 @@
             const Drive_Pct = (getSum(26, 29) - 4) / 16 * 100;
 
             const radarData = [Finance_Pct, Burnout_Pct, Stagnation_Pct, Market_Pct, Drive_Pct, Risk_Pct];
+            const dimScores = [Finance_Pct, Risk_Pct, Burnout_Pct, Stagnation_Pct, Market_Pct, Drive_Pct];
 
             // 第二步：宏观 3 维
             const Base_Raw = getSum(0, 4) + getSum(5, 7);
@@ -384,52 +408,67 @@
             const pullStr = Pull_Pct >= 60 ? 'H' : 'L';
             const key = `${baseStr}-${pushStr}-${pullStr}`;
             
-            const resultData = resultsDB[key] || resultsDB["L-L-L"];
+            // 【新增】构造需要保存的数据对象
+            const saveData = {
+                Base_Pct: Base_Pct,
+                radarData: radarData,
+                dimScores: dimScores,
+                resultKey: key
+            };
 
-            // 渲染 UI
-            if (Base_Pct < 25) {
-                document.getElementById('veto-banner').style.display = 'block';
-            }
+            // 【新增】将测试结果存入本地缓存
+            localStorage.setItem('careerQuizResult', JSON.stringify(saveData));
 
-            document.getElementById('res-title').innerText = resultData.title;
-            document.getElementById('res-tag').innerText = resultData.tag;
-            document.getElementById('res-persona').innerText = resultData.persona;
-            document.getElementById('res-truth').innerText = resultData.truth;
-            document.getElementById('res-warm').innerText = resultData.warm;
-
-            const guideUl = document.getElementById('res-guide');
-            guideUl.innerHTML = '';
-            resultData.guide.forEach(item => {
-                const li = document.createElement('li');
-                li.innerText = item;
-                guideUl.appendChild(li);
-            });
-
-            // 渲染进度条列表：采用浅绿和浅咖交替或者分类
-            const dimNames = ["财务安全", "风险承受", "身心耗竭", "职业瓶颈", "市场竞争", "核心驱动"];
-            const dimScores = [Finance_Pct, Risk_Pct, Burnout_Pct, Stagnation_Pct, Market_Pct, Drive_Pct];
-            
-            // 色彩搭配：正面资源用绿色，负面压力用咖色/偏红，这里统一使用我们定义的主题色
-            const colorGreen = "var(--accent-green)";
-            const colorBrown = "var(--accent-brown)";
-            const dimColors = [colorGreen, colorGreen, colorBrown, colorBrown, colorGreen, colorGreen];
-            
-            const dimContainer = document.getElementById('dim-bars');
-            dimContainer.innerHTML = '';
-            dimNames.forEach((name, idx) => {
-                const val = Math.round(dimScores[idx]);
-                dimContainer.innerHTML += `
-                    <div class="dim-item">
-                        <div class="dim-header"><span>${name}</span><span>${val}%</span></div>
-                        <div class="dim-bg"><div class="dim-fill" style="width: ${val}%; background-color: ${dimColors[idx]}"></div></div>
-                    </div>
-                `;
-            });
-
+            // 调用分离出来的 UI 渲染函数
+            renderResultUI(saveData);
             switchView('page-result');
-            renderRadar(radarData);
+            setTimeout(() => renderRadar(radarData), 100);
 
         }, 1200); // 1.2s 动画模拟
+    }
+
+    // --- 【新增】将渲染结果页的逻辑单独提取出来，方便答题完和读取缓存时复用 ---
+    function renderResultUI(data) {
+        const resultData = resultsDB[data.resultKey] || resultsDB["L-L-L"];
+
+        // 熔断机制：Base_Pct < 25 触发红条警告
+        if (data.Base_Pct < 25) {
+            document.getElementById('veto-banner').style.display = 'block';
+        } else {
+            document.getElementById('veto-banner').style.display = 'none';
+        }
+
+        document.getElementById('res-title').innerText = resultData.title;
+        document.getElementById('res-tag').innerText = resultData.tag;
+        document.getElementById('res-persona').innerText = resultData.persona;
+        document.getElementById('res-truth').innerText = resultData.truth;
+        document.getElementById('res-warm').innerText = resultData.warm;
+
+        const guideUl = document.getElementById('res-guide');
+        guideUl.innerHTML = '';
+        resultData.guide.forEach(item => {
+            const li = document.createElement('li');
+            li.innerText = item;
+            guideUl.appendChild(li);
+        });
+
+        // 渲染进度条列表
+        const dimNames = ["财务安全", "风险承受", "身心耗竭", "职业瓶颈", "市场竞争", "核心驱动"];
+        const colorGreen = "var(--accent-green)";
+        const colorBrown = "var(--accent-brown)";
+        const dimColors = [colorGreen, colorGreen, colorBrown, colorBrown, colorGreen, colorGreen];
+        
+        const dimContainer = document.getElementById('dim-bars');
+        dimContainer.innerHTML = '';
+        dimNames.forEach((name, idx) => {
+            const val = Math.round(data.dimScores[idx]);
+            dimContainer.innerHTML += `
+                <div class="dim-item">
+                    <div class="dim-header"><span>${name}</span><span>${val}%</span></div>
+                    <div class="dim-bg"><div class="dim-fill" style="width: ${val}%; background-color: ${dimColors[idx]}"></div></div>
+                </div>
+            `;
+        });
     }
 
     function renderRadar(dataArray) {
@@ -448,14 +487,13 @@
                 center: ['50%', '50%'],
                 radius: 100,
                 splitNumber: 4,
-                axisName: { color: '#8c8278', fontSize: 13, fontWeight: 500 }, // 浅咖色字体
+                axisName: { color: '#8c8278', fontSize: 13, fontWeight: 500 }, 
                 splitArea: { 
                     areaStyle: { 
-                        // 淡淡的莫兰迪绿色网格
                         color: ['rgba(139,168,136, 0.02)', 'rgba(139,168,136, 0.05)','rgba(139,168,136, 0.08)','rgba(139,168,136, 0.12)'] 
                     } 
                 },
-                axisLine: { lineStyle: { color: 'rgba(196,178,161, 0.3)' } }, // 浅咖色轴线
+                axisLine: { lineStyle: { color: 'rgba(196,178,161, 0.3)' } }, 
                 splitLine: { lineStyle: { color: 'rgba(196,178,161, 0.3)' } } 
             },
             series: [{
@@ -463,13 +501,19 @@
                 data: [{
                     value: dataArray,
                     name: '维测结果',
-                    areaStyle: { color: 'rgba(139, 168, 136, 0.4)' }, // 浅绿填充
-                    lineStyle: { color: '#8ba888', width: 2 }, // 浅绿边框
+                    areaStyle: { color: 'rgba(139, 168, 136, 0.4)' }, 
+                    lineStyle: { color: '#8ba888', width: 2 }, 
                     itemStyle: { color: '#8ba888' }
                 }]
             }]
         };
         myChart.setOption(option);
+    }
+
+    // --- 【新增】重新测试：清空缓存并刷新页面 ---
+    function restartQuiz() {
+        localStorage.removeItem('careerQuizResult');
+        location.reload();
     }
 </script>
 </body>
